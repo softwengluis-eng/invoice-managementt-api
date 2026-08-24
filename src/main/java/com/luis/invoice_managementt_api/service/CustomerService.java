@@ -3,11 +3,13 @@ package com.luis.invoice_managementt_api.service;
 import com.luis.invoice_managementt_api.dto.CustomerRequest;
 import com.luis.invoice_managementt_api.dto.CustomerResponse;
 import com.luis.invoice_managementt_api.entity.Customer;
+import com.luis.invoice_managementt_api.exception.ConflictException;
 import com.luis.invoice_managementt_api.exception.ResourceNotFoundException;
 import com.luis.invoice_managementt_api.repository.CustomerRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public class CustomerService {
@@ -19,14 +21,23 @@ public class CustomerService {
     }
 
     public CustomerResponse create(CustomerRequest request) {
-       Customer customer = new Customer();
 
-       customer.setName(request.name());
-       customer.setEmail(request.email());
-       customer.setDocument(request.document());
+        if (customerRepository.existsByEmail(request.email())) {
+        throw new ConflictException("Email already registered");
+        }
 
-       Customer saveCustomer = customerRepository.save(customer);
-       return toResponse(saveCustomer);
+        if (customerRepository.existsByDocument(request.document())) {
+        throw new ConflictException("Document already registered");
+        }
+
+        Customer customer = new Customer();
+
+        customer.setName(request.name());
+        customer.setEmail(request.email());
+        customer.setDocument(request.document());
+
+        Customer saveCustomer = customerRepository.save(customer);
+        return toResponse(saveCustomer);
     }
 
     public CustomerResponse findById(Long id) {
@@ -37,12 +48,9 @@ public class CustomerService {
         return toResponse(customer);
     }
 
-    public List<CustomerResponse> findAll() {
+    public Page<CustomerResponse> findAll(Pageable pageable) {
 
-        return customerRepository.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+        return customerRepository.findAll(pageable).map(this::toResponse);
     }
 
     public CustomerResponse update(Long id, CustomerRequest request) {

@@ -6,4 +6,7 @@ import com.luis.invoice_managementt_api.entity.Customer;
 
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     
+    boolean existsByEmail(String email);
+
+    boolean existsByDocument(String document);
 }
