@@ -6,6 +6,9 @@ import com.luis.invoice_managementt_api.service.CustomerService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +35,12 @@ public class CustomerController {
     }
 
     @GetMapping
-    public ResponseEntity<List<CustomerResponse>> findAll() {
-        return ResponseEntity.ok(customerService.findAll());
+    public ResponseEntity<Page<CustomerResponse>> findAll(
+            @PageableDefault(size = 10, sort = "name")
+            Pageable pageable) {
+                
+        return ResponseEntity.ok(customerService.findAll(pageable)
+        );
     }
 
     @GetMapping("/{id}")
