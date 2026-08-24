@@ -1,6 +1,9 @@
 package com.luis.invoice_managementt_api.service;
 
+import com.luis.invoice_managementt_api.dto.CustomerRequest;
+import com.luis.invoice_managementt_api.dto.CustomerResponse;
 import com.luis.invoice_managementt_api.entity.Customer;
+import com.luis.invoice_managementt_api.exception.ResourceNotFoundException;
 import com.luis.invoice_managementt_api.repository.CustomerRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,32 +18,63 @@ public class CustomerService {
         this.customerRepository = customerRepository;
     }
 
-    public Customer create(Customer customer) {
-        return customerRepository.save(customer);
+    public CustomerResponse create(CustomerRequest request) {
+       Customer customer = new Customer();
+
+       customer.setName(request.name());
+       customer.setEmail(request.email());
+       customer.setDocument(request.document());
+
+       Customer saveCustomer = customerRepository.save(customer);
+       return toResponse(saveCustomer);
     }
 
-    public List<Customer> findAll() {
-        return customerRepository.findAll();
+    public CustomerResponse findById(Long id) {
+
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        return toResponse(customer);
     }
 
-    public Customer findById(Long id) {
-        return customerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Customer not found"));
+    public List<CustomerResponse> findAll() {
+
+        return customerRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public Customer update(Long id, Customer customer) {
-        Customer existingCustomer = findById(id);
+    public CustomerResponse update(Long id, CustomerRequest request) {
 
-        existingCustomer.setName(customer.getName());
-        existingCustomer.setEmail(customer.getEmail());
-        existingCustomer.setDocument(customer.getDocument());
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
-        return customerRepository.save(existingCustomer);
+        customer.setName(request.name());
+        customer.setEmail(request.email());
+        customer.setDocument(request.document());
+
+        Customer updatedCustomer = customerRepository.save(customer);
+
+        return toResponse(updatedCustomer);
     }
 
     public void delete(Long id) {
-        Customer existingCustomer = findById(id);
 
-        customerRepository.delete(existingCustomer);
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        customerRepository.delete(customer);
+    }
+    private CustomerResponse toResponse(Customer customer) {
+
+        return new CustomerResponse(
+                customer.getId(),
+                customer.getName(),
+                customer.getEmail(),
+                customer.getDocument(),
+                customer.getCreatedAt(),
+                customer.getUpdatedAt()
+        );
     }
 }
