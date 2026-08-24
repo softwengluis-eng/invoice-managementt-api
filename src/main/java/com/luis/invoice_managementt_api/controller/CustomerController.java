@@ -1,7 +1,11 @@
 package com.luis.invoice_managementt_api.controller;
 
-import com.luis.invoice_managementt_api.entity.Customer;
+import com.luis.invoice_managementt_api.dto.CustomerRequest;
+import com.luis.invoice_managementt_api.dto.CustomerResponse;
 import com.luis.invoice_managementt_api.service.CustomerService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,31 +23,31 @@ public class CustomerController {
     }
 
     @PostMapping
-    public ResponseEntity<Customer> create(@RequestBody Customer customer) {
-        Customer createdCustomer = customerService.create(customer);
+    public ResponseEntity<CustomerResponse> create(@Valid @RequestBody CustomerRequest request) {
+        CustomerResponse response = customerService.create(request);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(createdCustomer);
+                .body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<Customer>> findAll() {
+    public ResponseEntity<List<CustomerResponse>> findAll() {
         return ResponseEntity.ok(customerService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Customer> findById(@PathVariable Long id) {
+    public ResponseEntity<CustomerResponse> findById(@PathVariable Long id) {
         return ResponseEntity.ok(customerService.findById(id));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Customer> update(
+    public ResponseEntity<CustomerResponse> update(
             @PathVariable Long id,
-            @RequestBody Customer customer) {
+            @RequestBody CustomerRequest request) {
 
         return ResponseEntity.ok(
-                customerService.update(id, customer)
+                customerService.update(id, request)
         );
     }
 
